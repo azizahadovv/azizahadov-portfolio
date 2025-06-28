@@ -1,0 +1,37 @@
+GITHUB UPLOAD COMMANDS
+====================
+
+Copy and paste these commands in order:
+
+1. Initialize Git Repository:
+git init
+git add .
+git commit -m "Initial commit: Multi-language portfolio website with EmailJS"
+
+2. Connect to your GitHub repository:
+git remote add origin https://github.com/azizahadovv/emailjs-portfolio.git
+
+3. Push to GitHub:
+git branch -M main
+git push -u origin main
+
+ALTERNATIVE METHOD (if repository already exists):
+git remote add origin https://github.com/azizahadovv/emailjs-portfolio.git
+git pull origin main --allow-unrelated-histories
+git push origin main
+
+FILES PREPARED FOR UPLOAD:
+✅ README.md - Complete project documentation
+✅ GITHUB_UPLOAD_GUIDE.md - Detailed upload instructions
+✅ EMAILJS_SETUP.md - Contact form setup guide
+✅ .gitignore - Proper file exclusions
+✅ All source code files
+✅ Multi-language portfolio website
+
+AFTER UPLOADING:
+1. Go to https://github.com/azizahadovv/emailjs-portfolio
+2. Check that all files uploaded correctly
+3. Update repository description
+4. Enable GitHub Pages for free hosting (optional)
+
+YOUR PROJECT IS READY TO UPLOAD!

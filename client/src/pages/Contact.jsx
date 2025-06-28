@@ -1,36 +1,88 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { Mail, Phone, MapPin, Send } from "lucide-react";
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Send,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
+import emailjs from "@emailjs/browser";
+import { useLanguage } from "../i18n/LanguageContext";
 import { developer } from "../data/data";
 
 export default function Contact() {
+  const { t } = useLanguage();
+  const form = useRef();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     projectType: "",
     budget: "",
-    message: ""
+    message: "",
   });
+
+  const [status, setStatus] = useState({
+    type: "", // 'success' | 'error' | 'loading'
+    message: "",
+  });
+
+  // EmailJS configuration - REPLACE WITH YOUR ACTUAL KEYS FROM EMAILJS.COM
+  const EMAILJS_SERVICE_ID = "service_kwbrxds"; // Replace with your service ID
+  const EMAILJS_TEMPLATE_ID = "template_swaglqz"; // Replace with your template ID
+  const EMAILJS_PUBLIC_KEY = "hv0mo3IouQotCsorT"; // Replace with your public key
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
-    // Handle form submission
-    alert("Thank you for your message! I'll get back to you soon.");
-    setFormData({
-      name: "",
-      email: "",
-      projectType: "",
-      budget: "",
-      message: ""
-    });
+    setStatus({ type: "loading", message: "Sending message..." });
+
+    try {
+      // Send email using EmailJS
+      const result = await emailjs.sendForm(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        form.current,
+        EMAILJS_PUBLIC_KEY,
+      );
+
+      if (result.status === 200) {
+        setStatus({
+          type: "success",
+          message:
+            "Thank you! Your message has been sent successfully. I'll get back to you soon!",
+        });
+
+        // Reset form
+        setFormData({
+          name: "",
+          email: "",
+          projectType: "",
+          budget: "",
+          message: "",
+        });
+      }
+    } catch (error) {
+      console.error("EmailJS Error:", error);
+      setStatus({
+        type: "error",
+        message:
+          "EmailJS not configured yet. Please contact me directly at azizbek.ahadov@example.com or set up EmailJS service.",
+      });
+    }
+
+    // Clear status after 5 seconds
+    setTimeout(() => {
+      setStatus({ type: "", message: "" });
+    }, 5000);
   };
 
   return (
@@ -42,7 +94,7 @@ export default function Contact() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          Get In Touch
+          {t("contactTitle")}
         </motion.h1>
 
         <motion.p
@@ -51,7 +103,7 @@ export default function Contact() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          Ready to start your next project? Let's discuss how we can work together.
+          {t("contactDescription")}
         </motion.p>
 
         <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
@@ -63,47 +115,51 @@ export default function Contact() {
             transition={{ duration: 0.8, delay: 0.4 }}
           >
             <div className="bg-surface p-8 rounded-xl">
-              <h3 className="text-2xl font-semibold mb-6 text-accent">Contact Information</h3>
-              
+              <h3 className="text-2xl font-semibold mb-6 text-accent">
+                {t("contactInfo")}
+              </h3>
+
               <div className="space-y-6">
                 <div className="flex items-center space-x-4">
                   <div className="bg-accent/10 p-3 rounded-lg">
                     <Mail className="text-accent" size={20} />
                   </div>
                   <div>
-                    <p className="text-gray-400">Email</p>
-                    <p className="text-light font-medium"><a  href={`mailto:${developer.email}`}>{developer.email}</a></p>
+                    <p className="text-gray-400">{t("email")}</p>
+                    <p className="text-light font-medium">{developer.email}</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-4">
                   <div className="bg-accent/10 p-3 rounded-lg">
                     <Phone className="text-accent" size={20} />
                   </div>
                   <div>
-                    <p className="text-gray-400">Phone</p>
-                    <p className="text-light font-medium"><a  href={`tel:${developer.phone}`}>{developer.phone}</a></p>
+                    <p className="text-gray-400">{t("phone")}</p>
+                    <p className="text-light font-medium">{developer.phone}</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-4">
                   <div className="bg-accent/10 p-3 rounded-lg">
                     <MapPin className="text-accent" size={20} />
                   </div>
                   <div>
-                    <p className="text-gray-400">Location</p>
-                    <p className="text-light font-medium">{developer.location}</p>
+                    <p className="text-gray-400">{t("location")}</p>
+                    <p className="text-light font-medium">
+                      {developer.location}
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="bg-surface p-8 rounded-xl">
-              <h3 className="text-xl font-semibold mb-4 text-accent">Let's Work Together</h3>
+              <h3 className="text-xl font-semibold mb-4 text-accent">
+                {t("workTogether")}
+              </h3>
               <p className="text-gray-300 leading-relaxed">
-                I'm always interested in new opportunities and exciting projects. 
-                Whether you need a full-stack web application, a mobile app, or 
-                consulting on your existing project, I'd love to hear from you.
+                {t("workTogetherText")}
               </p>
             </div>
           </motion.div>
@@ -114,11 +170,37 @@ export default function Contact() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
           >
-            <form onSubmit={handleSubmit} className="bg-surface p-8 rounded-xl space-y-6">
+            {/* Status Message */}
+            {status.message && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`p-4 rounded-lg mb-6 flex items-center space-x-2 ${
+                  status.type === "success"
+                    ? "bg-green-500/20 border border-green-500/50 text-green-400"
+                    : status.type === "error"
+                      ? "bg-red-500/20 border border-red-500/50 text-red-400"
+                      : "bg-blue-500/20 border border-blue-500/50 text-blue-400"
+                }`}
+              >
+                {status.type === "success" && <CheckCircle size={20} />}
+                {status.type === "error" && <AlertCircle size={20} />}
+                {status.type === "loading" && (
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current"></div>
+                )}
+                <span>{status.message}</span>
+              </motion.div>
+            )}
+
+            <form
+              ref={form}
+              onSubmit={handleSubmit}
+              className="bg-surface p-8 rounded-xl text-black space-y-6"
+            >
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Your Name *
+                    {t("yourName")} *
                   </label>
                   <input
                     type="text"
@@ -130,10 +212,10 @@ export default function Contact() {
                     placeholder="John Doe"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Email Address *
+                    {t("emailAddress")} *
                   </label>
                   <input
                     type="email"
@@ -150,7 +232,7 @@ export default function Contact() {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Project Type
+                    {t("projectType")}
                   </label>
                   <select
                     name="projectType"
@@ -158,17 +240,19 @@ export default function Contact() {
                     onChange={handleChange}
                     className="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg focus:border-accent focus:outline-none transition-colors text-light"
                   >
-                    <option value="">Select project type</option>
-                    <option value="web-development">Web Development</option>
-                    <option value="mobile-app">Mobile App</option>
-                    <option value="consulting">Consulting</option>
-                    <option value="other">Other</option>
+                    <option value="">{t("selectProjectType")}</option>
+                    <option value="web-development">
+                      {t("webDevelopment")}
+                    </option>
+                    <option value="mobile-app">{t("mobileApp")}</option>
+                    <option value="consulting">{t("consulting")}</option>
+                    <option value="other">{t("other")}</option>
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Budget Range
+                    {t("budgetRange")}
                   </label>
                   <select
                     name="budget"
@@ -176,7 +260,7 @@ export default function Contact() {
                     onChange={handleChange}
                     className="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg focus:border-accent focus:outline-none transition-colors text-light"
                   >
-                    <option value="">Select budget range</option>
+                    <option value="">{t("selectBudgetRange")}</option>
                     <option value="1000-5000">$1,000 - $5,000</option>
                     <option value="5000-10000">$5,000 - $10,000</option>
                     <option value="10000-25000">$10,000 - $25,000</option>
@@ -187,7 +271,7 @@ export default function Contact() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Project Details *
+                  {t("projectDetails")} *
                 </label>
                 <textarea
                   name="message"
@@ -196,18 +280,32 @@ export default function Contact() {
                   required
                   rows="6"
                   className="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg focus:border-accent focus:outline-none transition-colors text-light resize-none"
-                  placeholder="Tell me about your project, goals, and timeline..."
+                  placeholder={t("projectDetailsPlaceholder")}
                 ></textarea>
               </div>
 
               <motion.button
                 type="submit"
-                className="w-full bg-accent text-dark py-4 rounded-lg font-semibold hover:bg-accent/90 transition-all duration-300 flex items-center justify-center space-x-2"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                disabled={status.type === "loading"}
+                className={`w-full py-4 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${
+                  status.type === "loading"
+                    ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                    : "bg-accent text-dark hover:bg-accent/90"
+                }`}
+                whileHover={status.type !== "loading" ? { scale: 1.02 } : {}}
+                whileTap={status.type !== "loading" ? { scale: 0.98 } : {}}
               >
-                <Send size={20} />
-                <span>Send Message</span>
+                {status.type === "loading" ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current"></div>
+                    <span>Sending...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send size={20} />
+                    <span>{t("sendMessage")}</span>
+                  </>
+                )}
               </motion.button>
             </form>
           </motion.div>
